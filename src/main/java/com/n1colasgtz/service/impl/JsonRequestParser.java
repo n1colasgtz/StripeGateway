@@ -1,4 +1,4 @@
-package com.n1colasgtz.impl;
+package com.n1colasgtz.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.n1colasgtz.model.PaymentRequest;
@@ -19,10 +19,18 @@ public class JsonRequestParser implements RequestParser {
     @Override
     public PaymentRequest parse(Map<String, Object> input) throws Exception {
         logger.debug("Parsing input: {}", input);
-        String body = (String) input.get("body");
+        Object body = input.get("body");
         if (body == null) {
             throw new IllegalArgumentException("Request body is missing");
         }
-        return objectMapper.readValue(body, PaymentRequest.class);
+        if (body instanceof String) {
+            // Handle body as a JSON string
+            return objectMapper.readValue((String) body, PaymentRequest.class);
+        } else if (body instanceof Map) {
+            // Handle body as a JSON object (Map)
+            return objectMapper.convertValue(body, PaymentRequest.class);
+        } else {
+            throw new IllegalArgumentException("Body must be a JSON string or object");
+        }
     }
 }
