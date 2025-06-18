@@ -1,7 +1,8 @@
 # StripeGateway.
-
-## AWS Lambda Stripe Payment Gateway.
-
+```
+AWS Lambda Stripe Payment Gateway.
+```
+## Payload Examples:
 ### → Adding balance payload:
 ```
 {
