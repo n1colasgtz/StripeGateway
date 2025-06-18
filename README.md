@@ -1,34 +1,6 @@
 # StripeGateway.
-
-## AWS Lambda Stripe Payment Gateway.
-
-### → Test payload for adding balance:
 ```
-{
-    "body": {
-        "storeId": "store1",
-        "amount": 100,
-        "currency": "eur",
-        "paymentToken": "tok_visa",
-        "description": "Test charge",
-        "requestType": "CHARGE"
-    }
-}
-```
-
-### → Payment Link Creation:
-```
-{
-    "body": {
-        "storeId": "store1",
-        "amount": 100,
-        "currency": "eur",
-        "description": "Test payment link",
-        "requestType": "PAYMENT_LINK",
-        "successUrl": "https://your-site.com/success",
-        "cancelUrl": "https://your-site.com/cancel"
-    }
-}
+AWS Lambda Stripe Payment Gateway.
 ```
 
 ### → Warning:
