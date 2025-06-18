@@ -59,8 +59,18 @@
 {
     "body": {
         "storeId": "store1",
-        "chargeId": "ch_3RbAV7B4clJTI30S0bhZhdAH",
-        "requestType": "STATUS"
+        "requestType": "WEBHOOK",
+        "webhookEvent": {
+            "id": "evt_...",
+            "type": "charge.succeeded",
+            "data": {
+                "object": {
+                    "id": "ch_3RbAV7B4clJTI30S0bhZhdAH",
+                    "amount": 100,
+                    "currency": "eur"
+                }
+            }
+        }
     }
 }
 ```
