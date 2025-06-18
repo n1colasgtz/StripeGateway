@@ -3,6 +3,9 @@ package com.n1colasgtz.service.impl;
 import com.n1colasgtz.model.PaymentRequest;
 import com.n1colasgtz.service.ChargeProcessor;
 import com.n1colasgtz.service.PaymentLinkProcessor;
+import com.n1colasgtz.service.RefundProcessor;
+import com.n1colasgtz.service.StatusProcessor;
+import com.n1colasgtz.service.WebhookProcessor;
 import com.stripe.StripeClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,14 +22,24 @@ public class PaymentProcessorFactory {
         String requestType = request.getRequestType();
         logger.debug("Selecting processor for request type: {}", requestType);
 
-        if ("CHARGE".equalsIgnoreCase(requestType)) {
-            ChargeProcessor processor = new StripeChargeProcessor(stripeClient);
-            return processor.processCharge(request);
-        } else if ("PAYMENT_LINK".equalsIgnoreCase(requestType)) {
-            PaymentLinkProcessor processor = new StripePaymentLinkProcessor(stripeClient);
-            return processor.processPaymentLink(request);
-        } else {
-            throw new IllegalArgumentException("Invalid request type: " + requestType);
+        switch (requestType.toUpperCase()) {
+            case "CHARGE":
+                ChargeProcessor chargeProcessor = new StripeChargeProcessor(stripeClient);
+                return chargeProcessor.processCharge(request);
+            case "PAYMENT_LINK":
+                PaymentLinkProcessor linkProcessor = new StripePaymentLinkProcessor(stripeClient);
+                return linkProcessor.processPaymentLink(request);
+            case "REFUND":
+                RefundProcessor refundProcessor = new StripeRefundProcessor(stripeClient);
+                return refundProcessor.processRefund(request);
+            case "STATUS":
+                StatusProcessor statusProcessor = new StripeStatusProcessor(stripeClient);
+                return statusProcessor.processStatus(request);
+            case "WEBHOOK":
+                WebhookProcessor webhookProcessor = new StripeWebhookProcessor(stripeClient);
+                return webhookProcessor.processWebhook(request);
+            default:
+                throw new IllegalArgumentException("Invalid request type: " + requestType);
         }
     }
 }

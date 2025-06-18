@@ -9,6 +9,9 @@ import com.n1colasgtz.model.PaymentRequest;
 import com.n1colasgtz.model.response.ChargeResponse;
 import com.n1colasgtz.model.response.ErrorResponse;
 import com.n1colasgtz.model.response.PaymentLinkResponse;
+import com.n1colasgtz.model.response.RefundResponse;
+import com.n1colasgtz.model.response.PaymentStatusResponse;
+import com.n1colasgtz.model.response.WebhookResponse;
 import com.n1colasgtz.service.impl.AWSSecretsManagerStore;
 import com.n1colasgtz.service.impl.JsonRequestParser;
 import com.n1colasgtz.service.impl.PaymentProcessorFactory;
@@ -72,6 +75,12 @@ public class PaymentLambda implements RequestHandler<Map<String, Object>, Map<St
             statusCode = ((ChargeResponse) response).getStatusCode();
         } else if (response instanceof PaymentLinkResponse) {
             statusCode = ((PaymentLinkResponse) response).getStatusCode();
+        } else if (response instanceof RefundResponse) {
+            statusCode = ((RefundResponse) response).getStatusCode();
+        } else if (response instanceof PaymentStatusResponse) {
+            statusCode = ((PaymentStatusResponse) response).getStatusCode();
+        } else if (response instanceof WebhookResponse) {
+            statusCode = ((WebhookResponse) response).getStatusCode();
         } else if (response instanceof ErrorResponse) {
             statusCode = ((ErrorResponse) response).getStatusCode();
         } else {
