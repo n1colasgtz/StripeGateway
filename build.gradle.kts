@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.n1colasgtz"
-version = "1.0-SNAPSHOT"
+version = "1.0-Alpha"
 
 ext {
     set("archiveBaseName", "payment-lambda")
