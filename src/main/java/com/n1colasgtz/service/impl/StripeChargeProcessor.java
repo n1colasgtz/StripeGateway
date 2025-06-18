@@ -1,8 +1,8 @@
 package com.n1colasgtz.service.impl;
 
 import com.n1colasgtz.model.PaymentRequest;
-import com.n1colasgtz.model.PaymentResponse;
-import com.n1colasgtz.service.PaymentProcessor;
+import com.n1colasgtz.model.response.ChargeResponse;
+import com.n1colasgtz.service.ChargeProcessor;
 import com.stripe.StripeClient;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
@@ -10,24 +10,29 @@ import com.stripe.param.ChargeCreateParams;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class StripePaymentProcessor implements PaymentProcessor {
-    private static final Logger logger = LogManager.getLogger(StripePaymentProcessor.class);
+public class StripeChargeProcessor implements ChargeProcessor {
+    private static final Logger logger = LogManager.getLogger(StripeChargeProcessor.class);
+    private final StripeClient stripeClient;
+
+    public StripeChargeProcessor(StripeClient stripeClient) {
+        this.stripeClient = stripeClient;
+    }
 
     @Override
-    public PaymentResponse processPayment(PaymentRequest request, String apiKey) {
+    public ChargeResponse processCharge(PaymentRequest request) {
         try {
-            logger.info("Processing payment for store: {}", request.getStoreId());
-            StripeClient stripeClient = new StripeClient(apiKey);
-
+            logger.info("Processing charge for store: {}", request.getStoreId());
+            if (request.getPaymentToken() == null || request.getPaymentToken().trim().isEmpty()) {
+                throw new IllegalArgumentException("Payment token is required for charge");
+            }
             ChargeCreateParams params = ChargeCreateParams.builder()
                     .setAmount(request.getAmount())
                     .setCurrency(request.getCurrency())
                     .setSource(request.getPaymentToken())
                     .setDescription(request.getDescription())
                     .build();
-
             Charge charge = stripeClient.charges().create(params);
-            return PaymentResponse.builder()
+            return ChargeResponse.builder()
                     .status("success")
                     .chargeId(charge.getId())
                     .amount(charge.getAmount())
@@ -36,14 +41,14 @@ public class StripePaymentProcessor implements PaymentProcessor {
                     .build();
         } catch (StripeException e) {
             logger.error("Stripe error: {}", e.getMessage(), e);
-            return PaymentResponse.builder()
+            return ChargeResponse.builder()
                     .status("error")
                     .message("Stripe error: " + e.getMessage())
                     .statusCode(400)
                     .build();
         } catch (Exception e) {
             logger.error("Unexpected error: {}", e.getMessage(), e);
-            return PaymentResponse.builder()
+            return ChargeResponse.builder()
                     .status("error")
                     .message("Unexpected error: " + e.getMessage())
                     .statusCode(500)

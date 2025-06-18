@@ -6,10 +6,13 @@ import com.amazonaws.services.secretsmanager.AWSSecretsManager;
 import com.amazonaws.services.secretsmanager.AWSSecretsManagerClientBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.n1colasgtz.model.PaymentRequest;
-import com.n1colasgtz.model.PaymentResponse;
+import com.n1colasgtz.model.response.ChargeResponse;
+import com.n1colasgtz.model.response.ErrorResponse;
+import com.n1colasgtz.model.response.PaymentLinkResponse;
 import com.n1colasgtz.service.impl.AWSSecretsManagerStore;
 import com.n1colasgtz.service.impl.JsonRequestParser;
-import com.n1colasgtz.service.impl.StripePaymentProcessor;
+import com.n1colasgtz.service.impl.PaymentProcessorFactory;
+import com.stripe.StripeClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,7 +23,7 @@ public class PaymentLambda implements RequestHandler<Map<String, Object>, Map<St
     private static final Logger logger = LogManager.getLogger(PaymentLambda.class);
     private final JsonRequestParser requestParser;
     private final AWSSecretsManagerStore secretStore;
-    private final StripePaymentProcessor paymentProcessor;
+    private final PaymentProcessorFactory paymentProcessorFactory;
 
     public PaymentLambda() {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -28,18 +31,19 @@ public class PaymentLambda implements RequestHandler<Map<String, Object>, Map<St
         try {
             AWSSecretsManager client = AWSSecretsManagerClientBuilder.standard().build();
             this.secretStore = new AWSSecretsManagerStore(client);
+            String apiKey = secretStore.getSecret("store1");
+            logger.debug("Initialized StripeClient with API key (redacted)");
+            this.paymentProcessorFactory = new PaymentProcessorFactory(new StripeClient(apiKey));
         } catch (Exception e) {
-            logger.error("Failed to initialize Secrets Manager client: {}", e.getMessage(), e);
-            throw new RuntimeException("Secrets Manager initialization failed", e);
+            logger.error("Failed to initialize dependencies: {}", e.getMessage(), e);
+            throw new RuntimeException("Initialization failed", e);
         }
-        this.paymentProcessor = new StripePaymentProcessor();
     }
 
-    // Constructor for dependency injection (testing)
-    public PaymentLambda(JsonRequestParser requestParser, AWSSecretsManagerStore secretStore, StripePaymentProcessor paymentProcessor) {
+    public PaymentLambda(JsonRequestParser requestParser, AWSSecretsManagerStore secretStore, PaymentProcessorFactory paymentProcessorFactory) {
         this.requestParser = requestParser;
         this.secretStore = secretStore;
-        this.paymentProcessor = paymentProcessor;
+        this.paymentProcessorFactory = paymentProcessorFactory;
     }
 
     @Override
@@ -47,16 +51,12 @@ public class PaymentLambda implements RequestHandler<Map<String, Object>, Map<St
         try {
             logger.info("Processing payment request: {}", input);
             PaymentRequest request = requestParser.parse(input);
-            String apiKey = secretStore.getSecret(request.getStoreId());
-            if (apiKey == null || apiKey.trim().isEmpty()) {
-                throw new IllegalStateException("Stripe API key is missing for store: " + request.getStoreId());
-            }
-            PaymentResponse response = paymentProcessor.processPayment(request, apiKey);
-            logger.info("Payment processed successfully: {}", response.getChargeId());
+            Object response = paymentProcessorFactory.processPayment(request);
+            logger.info("Request processed successfully: {}", response);
             return toResponseMap(response);
         } catch (Exception e) {
             logger.error("Error processing payment: {}", e.getMessage(), e);
-            PaymentResponse errorResponse = PaymentResponse.builder()
+            ErrorResponse errorResponse = ErrorResponse.builder()
                     .status("error")
                     .message("Internal error: " + e.getMessage())
                     .statusCode(500)
@@ -65,15 +65,27 @@ public class PaymentLambda implements RequestHandler<Map<String, Object>, Map<St
         }
     }
 
-    private Map<String, Object> toResponseMap(PaymentResponse response) {
+    private Map<String, Object> toResponseMap(Object response) {
         Map<String, Object> result = new HashMap<>();
-        result.put("statusCode", response.getStatusCode());
-        try {
-            result.put("body", new ObjectMapper().writeValueAsString(response));
-        } catch (Exception e) {
-            logger.error("Error serializing response: {}", e.getMessage(), e);
-            result.put("body", "{\"status\":\"error\",\"message\":\"Response serialization failed\",\"statusCode\":500}");
+        int statusCode = 500;
+        if (response instanceof ChargeResponse) {
+            statusCode = ((ChargeResponse) response).getStatusCode();
+        } else if (response instanceof PaymentLinkResponse) {
+            statusCode = ((PaymentLinkResponse) response).getStatusCode();
+        } else if (response instanceof ErrorResponse) {
+            statusCode = ((ErrorResponse) response).getStatusCode();
+        } else {
+            logger.warn("Unexpected response type: {}", response != null ? response.getClass().getName() : "null");
+            result.put("body", ErrorResponse.builder()
+                    .status("error")
+                    .message("Unexpected response type")
+                    .statusCode(500)
+                    .build());
+            result.put("statusCode", 500);
+            return result;
         }
+        result.put("statusCode", statusCode);
+        result.put("body", response);
         return result;
     }
 }

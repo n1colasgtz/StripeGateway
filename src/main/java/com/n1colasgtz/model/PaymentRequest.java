@@ -13,6 +13,9 @@ public class PaymentRequest {
     private String currency;
     private String paymentToken;
     private String description;
+    private String requestType; // CHARGE or PAYMENT_LINK
+    private String successUrl; // For PAYMENT_LINK
+    private String cancelUrl;  // For PAYMENT_LINK
 
     // Default constructor for Jackson
     public PaymentRequest() {}
@@ -24,11 +27,17 @@ public class PaymentRequest {
             @JsonProperty("amount") long amount,
             @JsonProperty("currency") String currency,
             @JsonProperty("paymentToken") String paymentToken,
-            @JsonProperty("description") String description) {
+            @JsonProperty("description") String description,
+            @JsonProperty("requestType") String requestType,
+            @JsonProperty("successUrl") String successUrl,
+            @JsonProperty("cancelUrl") String cancelUrl) {
         this.storeId = storeId;
         this.amount = amount;
         this.currency = currency;
         this.paymentToken = paymentToken;
         this.description = description;
+        this.requestType = requestType;
+        this.successUrl = successUrl;
+        this.cancelUrl = cancelUrl;
     }
 }
