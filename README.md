@@ -1,6 +1,9 @@
-Non-tested AI Generated AWS Lambda Stripe Payment Gateway
+# StripeGateway
 
-Test payload for adding balance
+## Non-tested AI Generated AWS Lambda Stripe Payment Gateway
+
+### Test payload for adding balance
+```
 {
     "body": {
         "storeId": "store1",
@@ -10,3 +13,4 @@ Test payload for adding balance
         "description": "Test payment"
     }
 }
+```
