@@ -2,7 +2,7 @@
 
 ## AWS Lambda Stripe Payment Gateway.
 
-### → Test payload for adding balance:
+### → Adding balance payload:
 ```
 {
     "body": {
@@ -16,7 +16,7 @@
 }
 ```
 
-### → Payment Link Creation:
+### → Payment link creation payload:
 ```
 {
     "body": {
@@ -27,6 +27,40 @@
         "requestType": "PAYMENT_LINK",
         "successUrl": "https://your-site.com/success",
         "cancelUrl": "https://your-site.com/cancel"
+    }
+}
+```
+
+### → Refund request payload:
+```
+{
+    "body": {
+        "storeId": "store1",
+        "chargeId": "ch_3RbAV7B4clJTI30S0bhZhdAH",
+        "amount": 50,
+        "requestType": "REFUND"
+    }
+}
+```
+
+### → Status check payload:
+```
+{
+    "body": {
+        "storeId": "store1",
+        "chargeId": "ch_3RbAV7B4clJTI30S0bhZhdAH",
+        "requestType": "STATUS"
+    }
+}
+```
+
+### → Webhook handling payload:
+```
+{
+    "body": {
+        "storeId": "store1",
+        "chargeId": "ch_3RbAV7B4clJTI30S0bhZhdAH",
+        "requestType": "STATUS"
     }
 }
 ```
