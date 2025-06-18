@@ -24,10 +24,8 @@ public class JsonRequestParser implements RequestParser {
             throw new IllegalArgumentException("Request body is missing");
         }
         if (body instanceof String) {
-            // Handle body as a JSON string
             return objectMapper.readValue((String) body, PaymentRequest.class);
         } else if (body instanceof Map) {
-            // Handle body as a JSON object (Map)
             return objectMapper.convertValue(body, PaymentRequest.class);
         } else {
             throw new IllegalArgumentException("Body must be a JSON string or object");

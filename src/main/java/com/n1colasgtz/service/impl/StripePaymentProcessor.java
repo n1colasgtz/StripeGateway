@@ -3,14 +3,12 @@ package com.n1colasgtz.service.impl;
 import com.n1colasgtz.model.PaymentRequest;
 import com.n1colasgtz.model.PaymentResponse;
 import com.n1colasgtz.service.PaymentProcessor;
-import com.stripe.Stripe;
+import com.stripe.StripeClient;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
+import com.stripe.param.ChargeCreateParams;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class StripePaymentProcessor implements PaymentProcessor {
     private static final Logger logger = LogManager.getLogger(StripePaymentProcessor.class);
@@ -19,13 +17,16 @@ public class StripePaymentProcessor implements PaymentProcessor {
     public PaymentResponse processPayment(PaymentRequest request, String apiKey) {
         try {
             logger.info("Processing payment for store: {}", request.getStoreId());
-            Stripe.apiKey = apiKey;
-            Map<String, Object> chargeParams = new HashMap<>();
-            chargeParams.put("amount", request.getAmount());
-            chargeParams.put("currency", request.getCurrency());
-            chargeParams.put("source", request.getPaymentToken());
-            chargeParams.put("description", request.getDescription());
-            Charge charge = Charge.create(chargeParams);
+            StripeClient stripeClient = new StripeClient(apiKey);
+
+            ChargeCreateParams params = ChargeCreateParams.builder()
+                    .setAmount(request.getAmount())
+                    .setCurrency(request.getCurrency())
+                    .setSource(request.getPaymentToken())
+                    .setDescription(request.getDescription())
+                    .build();
+
+            Charge charge = stripeClient.charges().create(params);
             return PaymentResponse.builder()
                     .status("success")
                     .chargeId(charge.getId())
@@ -39,6 +40,13 @@ public class StripePaymentProcessor implements PaymentProcessor {
                     .status("error")
                     .message("Stripe error: " + e.getMessage())
                     .statusCode(400)
+                    .build();
+        } catch (Exception e) {
+            logger.error("Unexpected error: {}", e.getMessage(), e);
+            return PaymentResponse.builder()
+                    .status("error")
+                    .message("Unexpected error: " + e.getMessage())
+                    .statusCode(500)
                     .build();
         }
     }
