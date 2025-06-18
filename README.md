@@ -7,8 +7,8 @@
 {
     "body": {
         "storeId": "store1",
-        "amount": 1000,
-        "currency": "usd",
+        "amount": 100, // 100 cents = €1.00
+        "currency": "eur",
         "paymentToken": "tok_visa",
         "description": "Test payment"
     }
