@@ -8,7 +8,7 @@ Java Stripe Gateway: https://github.com/n1colasgtz/StripeGateway
 
 Rust Stripe Gateway: https://github.com/n1colasgtz/RustStripeGateway
 
-# Performance Comparison: Java Stripe Gateway vs Rust Stripe Gateway
+## Performance Comparison: Java Stripe Gateway vs Rust Stripe Gateway
 
 | Metric                | Java Stripe Gateway | Rust Stripe Gateway | Absolute Difference | Percentage Difference |
 |-----------------------|---------------------|---------------------|---------------------|-----------------------|
