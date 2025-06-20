@@ -4,10 +4,6 @@
 
 **Java Cold Start Warning**: The Java-based Stripe Gateway suffers from significant cold start latency, primarily due to the JVM's initialization overhead, as evidenced by the 2432.56 ms init duration in performance tests. To address this, I have developed a new Rust-based Stripe Gateway, which reduces init duration by 97.35% (to 64.40 ms). Cold start issues in Java can be mitigated using AWS warm instances with Amazon's Lambda warmers, where you configure a fixed number of instances (e.g., 5–10, depending on traffic) to remain "warm" by periodically invoking them, ensuring faster response times. However, this increases costs and complexity. To entirely avoid cold start problems and achieve optimal performance with minimal resource usage, transitioning to the Rust Stripe Gateway is recommended, as it offers superior initialization speed and efficiency.
 
-Java Stripe Gateway: https://github.com/n1colasgtz/StripeGateway
-
-Rust Stripe Gateway: https://github.com/n1colasgtz/RustStripeGateway
-
 ## Performance Comparison: Java Stripe Gateway vs Rust Stripe Gateway
 
 | Metric                | Java Stripe Gateway | Rust Stripe Gateway | Absolute Difference | Percentage Difference |
