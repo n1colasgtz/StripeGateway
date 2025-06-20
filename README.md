@@ -26,6 +26,9 @@ Rust Stripe Gateway: https://github.com/n1colasgtz/RustStripeGateway
 - **Resources Configured**: Rust uses 93.75% less memory (1920 MB less), highlighting its efficiency in resource allocation.
 - **Max Memory Used**: Rust consumes 84.95% less memory (158 MB less), further emphasizing its memory efficiency.
 
+## License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
 ## Reference
 - **Java Stripe Gateway**: https://github.com/n1colasgtz/StripeGateway
 - **Rust Stripe Gateway**: https://github.com/n1colasgtz/RustStripeGateway
